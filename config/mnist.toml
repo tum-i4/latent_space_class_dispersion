@@ -1,0 +1,42 @@
+# Classification for MNIST dataset
+model = "mnist-lenet5" 
+network_type = "classification"
+model_profile_path = "models/mnist/lenet5/classification_lenet5.pickle" # Change model directory in path as well.
+centroids_save_path = "saved_parameters/init_centroids/mnist_lenet5.pickle" # depreciated
+input_channels = 1
+input_width = 28
+input_height = 28
+
+# Dataset attributes
+data = "mnist"
+use_enriched_gt = "enriched"  # enriched, visible, all
+data_path = "/srv/vivek/current_datasets/mnist_dataset"
+mode = 'test' # Only used to select split during fuzzing. Doesn't matter for centroids calculations. 
+num_classes = 10
+num_workers = 0
+
+# Mean and Std of Images for datasets 
+norm_mean_mnist = [0.1307]
+norm_std_mnist = [0.3081]
+  
+pretrained_backbone = true
+
+# for fuzzying
+normalize_data = false 
+batch_size = 16 
+num_mutants = 20
+max_iterations = 15000
+random = 0
+seed_selection = "tensorfuzz" # tensorfuzz, prob, equal_samples, equal_samples_v2, equal_gain
+fuzz_criteria = "sa" # nc, kmnc, nbc, lscd ,sa
+lscd_distance = "euclidean" # manhattan, cosine, euclidean
+fuzz_entire_test_set = false
+init_seed_selection = "true_classified" # 'true_classified' & 'high_prob'
+
+mutation_criteria = "transformations"
+random_severity = true # false: constant severity level, true: random severity level
+
+[detection_model]
+	model = 'mnist_lenet5'
+	dataset = 'mnist'
+	image_set = 'mnist'

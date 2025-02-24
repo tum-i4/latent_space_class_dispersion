@@ -1,0 +1,45 @@
+# Classification for GTSRB dataset
+model = "gtsrb-new" # "gtsrb-new" or "gtsrb-lenet"
+network_type = "classification"
+model_profile_path = "models/gtsrb/gtsrb_new/classification_new.pickle" # Change model directory in path as well.
+centroids_save_path = "saved_parameters/init_centroids/gtsrb_new.pickle" # Read the centroids and use it during fuzzing. -> Store centroids first. # depreciated
+input_channels = 3 # for lenet = 1, new = 3
+input_width = 32 # for lenet, new = 32
+input_height = 32 # for lenet, new = 32
+
+# Dataset attributes
+data = "gtsrb" # gtsrb-gray or gtsrb
+use_enriched_gt = "enriched"  # enriched, visible, all
+data_path = "/srv/vivek/current_datasets/gtsrb_dataset"
+mode = 'test' # Only used to select split during fuzzing. Doesn't matter for centroids calculations.
+num_classes = 43
+num_workers = 0
+
+# Mean and Std of Images for datasets 
+norm_mean_gtsrb = [0.33370, 0.30640, 0.3171]
+norm_std_gtsrb = [0.26720, 0.25640, 0.26290]
+
+norm_mean_gtsrb-gray = [0.5317]
+norm_std_gtsrb-gray = [0.3174]
+
+pretrained_backbone = true
+
+# for fuzzying
+normalize_data = false # TO DO: prob while true.. bt we use normalised data...
+batch_size = 16 
+num_mutants = 20
+max_iterations = 15000
+random = 0
+seed_selection = "prob" # tensorfuzz, prob, equal_samples, equal_samples_v2, equal_gain
+fuzz_criteria = "lscd" # nc, kmnc, nbc, lscd
+lscd_distance = "euclidean" # manhattan , cosine
+fuzz_entire_test_set = true
+init_seed_selection = "true_classified" # 'true_classified' & 'high_prob'
+
+mutation_criteria = "transformations"
+random_severity = true # false: constant severity level, true: random severity level
+
+[detection_model]
+	model = 'gtsrb'
+	dataset = 'gtsrb'
+	image_set = 'gtsrb'  # gtsrb-gray
