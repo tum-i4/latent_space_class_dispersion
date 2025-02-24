@@ -110,7 +110,6 @@ def calculate_mutation_score(input_data, reference_data, num_classes, split):
     ref_data_frame_new = reference_data.copy(deep=True)
     ip_grouped = input_data_frame_new.groupby("label")
     ref_grouped = ref_data_frame_new.groupby("label")
-    # input_data_frame_new.reset_index(drop=True, inplace=True)
     label_pairs_dict = defaultdict(list)
 
     for label, group in ip_grouped:
@@ -171,28 +170,19 @@ def calculate_lscd(centroid_loaded, input_data_frame, num_classes):
         try:
             diffs = torch.abs(cl_feature_vectors - cl_centroid)
             euc_dists = torch.norm(diffs, p=2, dim=1)
-            # for vector in cl_feature_vectors:
-            #     # diff = np.abs(np.array(vector) - np.array(cl_centroid))
-            #     # distance = np.linalg.norm(diff)
-            #     diff = torch.abs(torch.tensor(vector) - cl_centroid)
-            #     euc_dist = torch.norm(diff, p=2)
-            #     all_dist.append(euc_dist)
         except:
             pass
 
-        # print(len(all_dist), len(cl_feature_vectors))
         lscd_values_dict[cl] = torch.mean(torch.tensor(euc_dists))
         all_distance_dict[cl] = euc_dists.tolist()
-        # lsc_sc_dict[cl] = get_lsc(lower=np.amin(all_dist), upper=np.amax(all_dist), k=100, sa=all_dist)
 
     for cl in range(num_classes):
         avg_lscd_value += lscd_values_dict[cl]
-        # avg_lsc_value += lsc_sc_dict[cl]
+
 
     avg_lscd_value = round(float(avg_lscd_value / num_classes),4)
-    # avg_lsc_value = round(float(avg_lsc_value / num_classes),4)
 
-    return lscd_values_dict, avg_lscd_value #, all_distance_dict
+    return lscd_values_dict, avg_lscd_value 
 
 
 def calculate_lscd_multithreading(centroid_loaded, input_data_frame, num_classes, num_workers=8):
@@ -215,13 +205,6 @@ def calculate_lscd_multithreading(centroid_loaded, input_data_frame, num_classes
         features = group["latent_space"].tolist()
         label_pairs_dict[label] = features
         
-    # with ProcessPoolExecutor() as executor: # Multiprocessing for creating multiple process per class (Slower compared to threading)
-    #     futures = [executor.submit(calculate_lscd_for_class, cl, centroid_loaded, label_pairs_dict, num_classes) for cl in range(num_classes)]
-
-    #     for future in as_completed(futures):
-    #         cl, lscd_value, distances = future.result()
-    #         lscd_values_dict[cl] = lscd_value
-    #         all_distance_dict[cl] = distances  # Store the distances
 
     for cl in range(num_classes):
         if cl in centroid_loaded["all_centroids"]:
@@ -230,20 +213,6 @@ def calculate_lscd_multithreading(centroid_loaded, input_data_frame, num_classes
             cl_centroid = torch.zeros(num_classes)
 
         cl_feature_vectors = torch.tensor(label_pairs_dict[cl])
-
-        # Vectorization works but not in parallel way.
-        # if torch.isnan(cl_centroid).any():
-        #     continue
-
-        # cl_feature_vectors = torch.tensor(label_pairs_dict[cl])
-        # valid_vectors = cl_feature_vectors[~torch.isnan(cl_feature_vectors).any(dim=1)]
-        # if valid_vectors.size(0) == 0:
-        #     continue
-        # diffs = torch.abs(valid_vectors - cl_centroid)
-        # euc_dists = torch.norm(diffs, p=2, dim=1)
-
-        # lscd_values_dict[cl] = torch.mean(euc_dists)
-        # all_distance_dict[cl] = euc_dists.tolist()
 
         # Using Multi-threading for each class using ThreadPoolExecutor.
         all_dist = []
@@ -267,20 +236,6 @@ def calculate_lscd_multithreading(centroid_loaded, input_data_frame, num_classes
     return lscd_values_dict, avg_lscd_value
 
 
-def classwise_analysis(lscd_values_dict, cl_ms_score_dict, num_classes):
-    cl_cor_values, ms_list, lscd_list = {}, [], []
-
-    for cl in range(num_classes):
-        cl_lscd = lscd_values_dict[cl]
-        cl_ms = cl_ms_score_dict[cl]
-        lscd_list.append(cl_lscd)
-        ms_list.append(cl_ms)
-
-    cor, p_value = spearmanr(ms_list, lscd_list)
-    # print("Classwise Correlation: ", cor, p_value)
-
-    return cl_cor_values
-
 def filter_data(data, filter_method):
 
     if filter_method == "IQR":
@@ -293,13 +248,6 @@ def filter_data(data, filter_method):
         ]
         data_clean = data_clean.reset_index()
 
-    elif filter_method == "IsolationForest":
-        iso_forest = IsolationForest(contamination=0.1)  # can be from (0.0, 0.5]
-        # data_isl = np.column_stack((data["ms_list"], data["lscd_list"]))
-        y_pred = iso_forest.fit_predict(data)
-        data_clean = data[y_pred == 1]
-        data_clean = data_clean.reset_index()
-
     else:
         data_clean = data
 
@@ -307,7 +255,6 @@ def filter_data(data, filter_method):
 
 def correlation_analysis (ms_list, lscd_list, acc_list, sc_list, log_filepath, filter_method):
     np.random.seed(0)
-    # outlier_methods = ["IQR", "IsolationForest"]
     correlation_methods = ["Spearman", "Pearson"]
     filtered_dict, filtered_dict_list = {}, {}
     
@@ -344,12 +291,6 @@ def correlation_analysis (ms_list, lscd_list, acc_list, sc_list, log_filepath, f
         print("Correlation MS v/s SC: ", cor_4, p_value_4)
         print("Correlation SC v/s Acc: ", cor_5, p_value_5)
 
-
-        # keys = ["ms_list", "lscd_list",  "acc_list"]
-
-        # filtered_dict.update({"outlier_filter_method:": filter_method})
-        # filtered_dict.update({"Correlation Coeffiecient:": correlation_method})
-        # filtered_dict.update({"Correlation Values: ": round(float(cor_1),3)})
         
         analysis_data = dict(
                     Outlier_method = filter_method,
@@ -364,10 +305,6 @@ def correlation_analysis (ms_list, lscd_list, acc_list, sc_list, log_filepath, f
                     ACC_list = list(data_clean["acc_list"]),
                     SC_list = list(data_clean["sc_list"])
                     )
-        
-        # for key in keys:
-        #     filtered_dict[key] = []
-        #     filtered_dict[key].extend(list(data_clean[key]))        
 
         data_key = str(i) + "_" + filter_method + "_" + correlation_method
         list_key = str(i) + "_" + filter_method + "_"+ correlation_method + "_data" 

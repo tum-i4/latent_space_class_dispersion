@@ -28,12 +28,12 @@ np.random.seed(0)
 is_post_training: bool = os.getenv("POST_TRAINING", "True").lower() == "true"
 
 dataset = os.getenv("DATASET", "svhn")
-dataset_plot = "GTSRB"
+dataset_plot = "SVHN"
 op_dir = os.getenv("OP_DIR", "svhn_3")
-op_file_name = "gtsrb_single_thread_1000_sc_valid"  # os.getenv("OP_DIR", "mnist_1_sc")
+op_file_name = os.getenv("OP_DIR", "svhn_1_sc")
 multi_threading = os.getenv("MUTLI_THREADING", "True").lower() == "true"
 num_classes = int(os.getenv("NUM_CLASSES", 10))
-outlier_methods = ["IQR", "IsolationForest"]
+outlier_methods = ["IQR"]
 
 results_directory = Path.cwd() / "results" / op_dir
 
@@ -162,7 +162,7 @@ for split in selected_splits_analyze:
         parquet_file_path = Path(selected_folder, "sut_training=0", f"{split}.parquet")
         ref_parquet_file_path = Path(
             evaluation_folders_current[0], "sut_training=0", f"{split}.parquet"
-        )  # evaluation_folders_current (Wrong reference for cc datasets, results into high MSs.)
+        ) 
 
         input_data = pd.read_parquet(parquet_file_path, engine="fastparquet")
         ref_data = pd.read_parquet(ref_parquet_file_path, engine="fastparquet")
@@ -231,8 +231,6 @@ for split in selected_splits_analyze:
                 2,
             )
 
-            # acc_list.append(accuracy_current)
-            # ms_list.append(round(mutation_score, 3))
             sc_list.append(surprise_coverage)
 
             print(
@@ -244,8 +242,6 @@ for split in selected_splits_analyze:
             print("Mutation Score:", mutation_score)
             print("Surprise Coverage:", surprise_coverage)
 
-        # ms_dict.update({split: ms_list})
-        # acc_dict.update({split: acc_list})
         sc_dict.update({split: sc_list})
 
 
