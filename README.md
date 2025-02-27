@@ -21,7 +21,7 @@ python -m pip install -r requirements.txt
 
 ### Data
 
-This folder contains pre-processed datasets that can be used to train mutant models in (/mutagen/).
+This folder should contain pre-processed datasets that can be used to train mutant models in (/mutagen/).
 
 ### Dataset
 This folder contains dataloading scripts that use base_dataset.py as a base class for loading the MNIST, SVHN, and GTSRB datasets. This can be extended to use a new dataset. The "corner_case_dataset.py" file contains a data loader for corner case images from fuzzing.
@@ -36,5 +36,11 @@ Use this folder and associated files to create mutant models and calculate LSCD,
 
 ### Results
 
-This folder should contain results obtained from mutation generation.
+This folder should contain results obtained from mutation generation. 
+
+### Accessing Datasets and trained mutant models (Download Link)
+
+Due to the large size of our datasets (both original and pre-processed) and the trained mutant models used in our correlation study, we are sharing them via a cloud download link. Please download the necessary files using the following link:
+
+[https://syncandshare.lrz.de/getlink/fiByBb2QhAViwhFXrjXJfr/]
 
